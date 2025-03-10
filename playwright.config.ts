@@ -13,10 +13,18 @@ export default defineConfig<TestOptions>({
 
     retries: 1,
     reporter: [
-        ['json', {outputFile: 'test-results/jsonReport.json'}],
-        ['junit', {outputFile: 'test-results/junitReport.xml'}],
-        // ['allure-playwright'],
-        ['html']
+        // Use "dot" reporter on CI, "list" otherwise (Playwright default).
+        process.env.CI ? ["dot"] : ["list"],
+        // Add Argos reporter.
+        [
+            "@argos-ci/playwright/reporter",
+            {
+                // Upload to Argos on CI only.
+                uploadToArgos: !!process.env.CI,
+
+                // Set your Argos token (required if not using GitHub Actions).
+            },
+        ],
     ],
 
     use: {
@@ -26,6 +34,7 @@ export default defineConfig<TestOptions>({
                 : 'http://localhost:4200/',
 
         trace: 'on-first-retry',
+        screenshot: "only-on-failure",
         actionTimeout: 20000,
         navigationTimeout: 25000,
         video: {
